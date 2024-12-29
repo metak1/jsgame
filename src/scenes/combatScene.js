@@ -14,11 +14,15 @@ export default function combatScene() {
 }
 
 function loadMission(stage) {
+    let currentPlayingCharacterSlot = null;
+    let turn = 1;
     let hasToFocus = false;
     let spellId = null;
     const mission = missions.find(mission => mission.stage == stage);
 
     k.add([k.sprite("combat-bg"), k.pos(0, 0)]);
+    let turnBg = k.add([k.rect(200, 50), k.color(40, 40, 40)]);
+    let turnText = k.add([k.text("Turn " + turn, { size: 24 }), k.pos(10, 15)]);
 
     const spellSlots = [
         k.add([k.sprite("spell-slot"), k.pos(1290, 870), k.area(), "spell", "0"]),
@@ -41,11 +45,10 @@ function loadMission(stage) {
                 target = ennemies.find(ennemy => ennemy.position == tag.substring(7));
                 console.log(target);
             } else {
-                target = allies.find(ally => ally.position == tag.substring(7));
+                target = team.find(ally => ally.position == tag.substring(7));
             }
-            damageEnnemy(team[0], spellId, target);
+            activateSpell(team[0], spellId, target);
             hasToFocus = false;
-            console.log(tag);
         }
     });
 
@@ -53,7 +56,6 @@ function loadMission(stage) {
         hasToFocus = true;
         spellId = o.tags.find(tag => tag == "0" || tag == "1" || tag == "2");
         spellId = Number(spellId);
-        console.log(spellId);
     });
 
     let team = spawnTeam(heroTeam);
@@ -89,7 +91,7 @@ function spawnTeam(heroTeam) {
     return team;
 }
 
-function damageEnnemy(sourceChar, spellId, targetChar) {
+function activateSpell(sourceChar, spellId, targetChar) {
     let damages = sourceChar.character.cast(spellId);
     targetChar.healthbar.damage(damages);
 
