@@ -1,0 +1,29 @@
+[
+    {
+        "stage": "1-1",
+        "name": "Mission 1",
+        "waves": [
+            {
+                "wave": [
+                    "Rasky",
+                    "Rasky",
+                    "Rasky",
+                    "Rasky"
+                ],
+                "boss": null
+            },
+            {
+                "wave": [
+                    "Rasky"
+                ],
+                "boss": null
+            },
+            {
+                "wave": [
+                    "Lancelot"
+                ],
+                "boss": 0
+            }
+        ]
+    }
+]

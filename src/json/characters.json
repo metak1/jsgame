@@ -1,0 +1,58 @@
+[
+    {
+        "name": "Lancelot",
+        "type": "fire",
+        "baseHealth": 200,
+        "baseAttack": 10,
+        "baseArmor": 10,
+        "baseSpeed": 10,
+        "spells": [
+            {
+                "name": "fireball",
+                "cooldown": 0,
+                "basePower": 40,
+                "type": "attack"
+            },
+            {
+                "name": "ice lance",
+                "cooldown": 0,
+                "basePower": 10,
+                "type": "attack"
+            },
+            {
+                "name": "poison",
+                "cooldown": 0,
+                "basePower": 5,
+                "type": "attack"
+            }
+        ]
+    },
+    {
+        "name": "Rasky",
+        "type": "water",
+        "baseHealth": 50,
+        "baseAttack": 5,
+        "baseArmor": 5,
+        "baseSpeed": 5,
+        "spells": [
+            {
+                "name": "fireball",
+                "cooldown": 0,
+                "basePower": 40,
+                "type": "attack"
+            },
+            {
+                "name": "fireball",
+                "cooldown": 0,
+                "basePower": 40,
+                "type": "attack"
+            },
+            {
+                "name": "fireball",
+                "cooldown": 0,
+                "basePower": 40,
+                "type": "attack"
+            }
+        ]
+    }
+]
