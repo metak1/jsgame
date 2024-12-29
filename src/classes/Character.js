@@ -5,12 +5,14 @@ export default class Character {
 
     constructor(name, level, equipments) {
         const char = characters.find(char => char.name == name);
+        this.name = name;
         this.level = level;
         this.type = char.type;
         this.baseHealth = char.baseHealth;
         this.baseAttack = char.baseAttack;
         this.baseArmor = char.baseArmor;
         this.baseSpeed = char.baseSpeed;
+        this.icon = char.icon;
         this.equipments = equipments;
         this.spells = [];
 

@@ -17,8 +17,11 @@ export default class CharacterSlot {
         this.healthbar = this.createHealthBar(this);
         this.gameObject = this.createGameObject(this, this.teamNumber);
 
-        this.turnGameObject = k.add([k.circle(18), k.color(k.BLACK), k.pos(52, ((720 * this.speedSum) / 1000) + 140)]);
+        k.loadSprite("char-icon", "assets/" + this.character.icon);
+        this.turnGameObject = k.add([k.sprite("char-icon"), k.scale(0.3), k.pos(30, ((720 * this.speedSum) / 1000) + 140)]);
+        this.turnTeamCircle = k.add([k.pos(52, ((720 * this.speedSum) / 1000) + 162), k.circle(23, { fill: false }), k.outline(4, teamNumber == 1 ? k.RED : k.BLUE)]);
 
+        this.playedOnce = false;
     }
 
     x() {
@@ -46,6 +49,8 @@ export default class CharacterSlot {
     kill() {
         this.healthbar.destroy();
         this.gameObject.destroy();
+        this.turnGameObject.destroy();
+        this.turnTeamCircle.destroy();
     }
 
     createGameObject() {
@@ -60,7 +65,8 @@ export default class CharacterSlot {
         return new Healthbar(this);
     }
 
-    setTurnIconHeight(height) {
-        this.turnGameObject.pos = k.vec2(52, height);
+    setCharacterActionIconPos(height) {
+        this.turnGameObject.pos = k.vec2(30, height);
+        this.turnTeamCircle.pos = k.vec2(52, height + 22);
     }
 }

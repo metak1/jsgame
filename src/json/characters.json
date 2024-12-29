@@ -6,6 +6,36 @@
         "baseAttack": 10,
         "baseArmor": 10,
         "baseSpeed": 205,
+        "icon": "lancelot.png",
+        "spells": [
+            {
+                "name": "fireball",
+                "cooldown": 0,
+                "basePower": 40,
+                "type": "attack"
+            },
+            {
+                "name": "ice lance",
+                "cooldown": 0,
+                "basePower": 10,
+                "type": "attack"
+            },
+            {
+                "name": "poison",
+                "cooldown": 0,
+                "basePower": 5,
+                "type": "attack"
+            }
+        ]
+    },
+    {
+        "name": "Hiri",
+        "type": "nature",
+        "baseHealth": 200,
+        "baseAttack": 10,
+        "baseArmor": 10,
+        "baseSpeed": 205,
+        "icon": "hiri.png",
         "spells": [
             {
                 "name": "fireball",
@@ -34,6 +64,7 @@
         "baseAttack": 5,
         "baseArmor": 5,
         "baseSpeed": 98,
+        "icon": "rasky.png",
         "spells": [
             {
                 "name": "fireball",
@@ -62,6 +93,7 @@
         "baseAttack": 5,
         "baseArmor": 5,
         "baseSpeed": 104,
+        "icon": "okumat.png",
         "spells": [
             {
                 "name": "fireball",
