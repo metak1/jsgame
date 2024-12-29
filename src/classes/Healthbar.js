@@ -17,7 +17,6 @@ export default class Healthbar {
     damage(damage) {
         this.characterSlot.remainingHp = this.characterSlot.remainingHp - (damage - this.characterSlot.character.armor());
         this.healthbar.width = (this.characterSlot.remainingHp * 210) / this.characterSlot.character.health();
-        console.log(this.characterSlot.remainingHp, damage - this.characterSlot.character.armor());
     }
 
     destroy() {

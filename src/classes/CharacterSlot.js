@@ -13,8 +13,11 @@ export default class CharacterSlot {
         this.position = position;
         this.teamNumber = teamNumber;
         this.remainingHp = this.character.health();
+        this.speedSum = this.character.speed();
         this.healthbar = this.createHealthBar(this);
         this.gameObject = this.createGameObject(this, this.teamNumber);
+
+        this.turnGameObject = k.add([k.circle(18), k.color(k.BLACK), k.pos(52, ((720 * this.speedSum) / 1000) + 140)]);
 
     }
 
@@ -55,5 +58,9 @@ export default class CharacterSlot {
 
     createHealthBar() {
         return new Healthbar(this);
+    }
+
+    setTurnIconHeight(height) {
+        this.turnGameObject.pos = k.vec2(52, height);
     }
 }

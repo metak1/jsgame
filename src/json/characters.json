@@ -5,7 +5,7 @@
         "baseHealth": 200,
         "baseAttack": 10,
         "baseArmor": 10,
-        "baseSpeed": 10,
+        "baseSpeed": 205,
         "spells": [
             {
                 "name": "fireball",
@@ -33,7 +33,35 @@
         "baseHealth": 50,
         "baseAttack": 5,
         "baseArmor": 5,
-        "baseSpeed": 5,
+        "baseSpeed": 98,
+        "spells": [
+            {
+                "name": "fireball",
+                "cooldown": 0,
+                "basePower": 40,
+                "type": "attack"
+            },
+            {
+                "name": "fireball",
+                "cooldown": 0,
+                "basePower": 40,
+                "type": "attack"
+            },
+            {
+                "name": "fireball",
+                "cooldown": 0,
+                "basePower": 40,
+                "type": "attack"
+            }
+        ]
+    },
+    {
+        "name": "Okumat",
+        "type": "water",
+        "baseHealth": 50,
+        "baseAttack": 5,
+        "baseArmor": 5,
+        "baseSpeed": 104,
         "spells": [
             {
                 "name": "fireball",
