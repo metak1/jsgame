@@ -3,6 +3,7 @@
 ## High importance
 
 - Spells system (only damage dealing spells are coded, do the same for heals, buffs, aoe spells, etc..)
+- Buffs system (icons on top of healthbar, charslot status, etc...)
 - AI system for ennemy units
 
 ## Medium importance
