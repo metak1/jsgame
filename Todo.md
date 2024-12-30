@@ -18,3 +18,11 @@
 - Animations
 - Change global colors
 - Optimize and mutualize code
+
+# Equipments
+
+- Implement equipments
+
+# Characters
+
+- Add equipment features (calculate stats and damages with equipments)
