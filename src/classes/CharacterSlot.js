@@ -5,15 +5,17 @@ import k from "../kaplayCtx";
 
 export default class CharacterSlot {
 
-    constructor(character, position, teamNumber) {
+    constructor(character, level, equipments, position, teamNumber) {
         this.slotWidth = 125;
         this.slotHeight = 250;
 
         this.character = character;
+        this.level = level;
+        this.equipments = equipments;
         this.position = position;
         this.teamNumber = teamNumber;
-        this.remainingHp = this.character.health();
-        this.speedSum = this.character.speed();
+        this.remainingHp = this.health();
+        this.speedSum = this.speed();
         this.healthbar = this.createHealthBar(this);
         this.gameObject = this.createGameObject(this, this.teamNumber);
 
@@ -22,6 +24,32 @@ export default class CharacterSlot {
         this.turnTeamCircle = k.add([k.pos(52, ((720 * this.speedSum) / 1000) + 162), k.circle(23, { fill: false }), k.outline(4, teamNumber == 1 ? k.RED : k.BLUE)]);
 
         this.playedOnce = false;
+    }
+
+    health() {
+        return this.character.baseHealth + 0;
+    }
+
+    attack() {
+        return this.character.baseAttack + 0;
+    }
+
+    armor() {
+        return this.character.baseArmor + 0;
+    }
+
+    speed() {
+        return this.character.baseSpeed + 0;
+    }
+
+    spells() {
+        return this.character.spells();
+    }
+
+
+    cast(spellId) {
+        this.character.spells[spellId].remainingCooldown = this.character.spells[spellId].cooldown;
+        return this.character.spells[spellId].basePower + this.attack();
     }
 
     x() {

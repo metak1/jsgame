@@ -23,6 +23,9 @@ let allChars = null;
 let mission = null;
 let turnText = null;
 let waveText = null;
+let spellSlots = null;
+let spellSlotsText = [];
+let combatStart = true;
 
 export default function combatScene() {
 
@@ -49,16 +52,16 @@ function loadMission(stage) {
     let waveBg = k.add([k.rect(200, 50), k.color(40, 40, 40), k.pos(1720, 0)]);
     waveText = k.add([k.text("Wave " + (wave + 1) + " / " + mission.waves.length, { size: 24 }), k.pos(1730, 15)]);
 
-    const spellSlots = [
-        k.add([k.sprite("spell-slot"), k.pos(1290, 870), k.area(), "spell", "0"]),
-        k.add([k.sprite("spell-slot"), k.pos(1500, 870), k.area(), "spell", "1"]),
-        k.add([k.sprite("spell-slot"), k.pos(1710, 870), k.area(), "spell", "2"])
+    spellSlots = [
+        k.add([k.sprite("spell-slot"), k.pos(1290, 870), k.area({ width: 200, height: 200 }), "spell", "0"]),
+        k.add([k.sprite("spell-slot"), k.pos(1500, 870), k.area({ width: 200, height: 200 }), "spell", "1"]),
+        k.add([k.sprite("spell-slot"), k.pos(1710, 870), k.area({ width: 200, height: 200 }), "spell", "2"])
     ];
 
     const heroTeam = [
-        new Character("Lancelot", 40, []),
-        new Character("Hiri", 23, []),
-        new Character("Okumat", 5, []),
+        new Character(1, 40, []),
+        new Character(2, 23, []),
+        new Character(4, 5, []),
     ];
 
     k.onClick("character-slot", (o) => {
@@ -99,6 +102,7 @@ function loadMission(stage) {
     ennemies = spawnWave(wave);
     allChars = team.concat(ennemies);
 
+
     setCharacterActionPositionTeam();
 
     startCharacterAction();
@@ -110,17 +114,19 @@ function incrementTurn() {
 }
 
 function spawnWave(waveNumber) {
-    return mission.waves[waveNumber].wave.map((info, index) =>
-        new CharacterSlot(new Character(info, 1, []), index, 2)
+    return mission.waves[waveNumber].wave.map((id, index) => {
+        console.log(id, index);
+        return new CharacterSlot(new Character(id), 1, [], index, 2);
+    }
     );
 }
 
 function spawnTeam(heroTeam) {
-    return heroTeam.map((hero, index) => new CharacterSlot(hero, index, 1));
+    return heroTeam.map((hero, index) => new CharacterSlot(hero, 1, [], index, 1));
 }
 
 function activateSpell(sourceChar, spellId, targetChar) {
-    const damages = sourceChar.character.cast(spellId);
+    const damages = sourceChar.cast(spellId);
     targetChar.healthbar.damage(damages);
     if (targetChar.remainingHp <= 0) {
         refreshTeamsData(targetChar);
@@ -131,22 +137,28 @@ function activateSpell(sourceChar, spellId, targetChar) {
 function setCharacterActionPositionTeam() {
 
     let currentSpeedChart = allChars.sort((a, b) => b.speedSum - a.speedSum);
-
+    console.log(currentSpeedChart);
     for (let i in currentSpeedChart) {
         currentSpeedChart[i].setCharacterActionIconPos(((720 * currentSpeedChart[i].speedSum) / 1000) + 140);
     }
     currentSpeedChart[0].setCharacterActionIconPos(840);
     charPos = currentSpeedChart[0].position;
     charTeam = currentSpeedChart[0].teamNumber;
+    console.log(charPos, charTeam);
 }
 
-function updateCharacterActionUI(currentPlayingCharacterSlot, turnCharIcon, turnCharName, turnCharHp) {
+function updateCharacterActionUI() {
     let spriteName = "char-icon-" + turnCharName;
     k.loadSprite(spriteName, "assets/" + currentPlayingCharacterSlot.character.icon);
 
     turnCharIcon.use(k.sprite(spriteName));
     turnCharName.text = currentPlayingCharacterSlot.character.name;
-    turnCharHp.text = currentPlayingCharacterSlot.remainingHp + " / " + currentPlayingCharacterSlot.character.health();
+    turnCharHp.text = currentPlayingCharacterSlot.remainingHp + " / " + currentPlayingCharacterSlot.health();
+
+    for (let i in spellSlots) {
+        const spriteSize = spellSlots[i].frameSize || { x: 200, y: 200 };
+        spellSlotsText[i].text = currentPlayingCharacterSlot.character.spells[i].name;
+    }
 }
 
 function startCharacterAction() {
@@ -154,7 +166,15 @@ function startCharacterAction() {
         ? team.find(t => t.position == charPos)
         : ennemies.find(e => e.position == charPos);
 
-    updateCharacterActionUI(currentPlayingCharacterSlot, turnCharIcon, turnCharName, turnCharHp);
+    if (combatStart) {
+        for (let i in spellSlots) {
+            const spriteSize = spellSlots[i].frameSize || { x: 200, y: 200 };
+            spellSlotsText[i] = k.add([k.text(currentPlayingCharacterSlot.character.spells[i].name), k.pos(spellSlots[i].pos.x + 10, spellSlots[i].pos.y + (spriteSize.y) / 2), k.color(0, 0, 0)]);
+        }
+        combatStart = false;
+    }
+
+    updateCharacterActionUI();
 
     // TO REMOVE ennemies pass their turn auto
     if (currentPlayingCharacterSlot.teamNumber == 2) {
@@ -171,7 +191,7 @@ function nextCharacterAction() {
         if (changeTurn) {
             changeTurn = allChars[i].playedOnce;
         }
-        allChars[i].speedSum += allChars[i].character.speed();
+        allChars[i].speedSum += allChars[i].speed();
     }
 
     if (changeTurn) {

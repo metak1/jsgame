@@ -11,12 +11,12 @@ export default class Healthbar {
         this.healthBarBackground = k.add([k.area(), k.sprite("healthbar-bg"), k.pos(characterSlot.x() - 70, characterSlot.y() - 50)]);
         this.healthbar = k.add([k.rect(210, 41), k.color(0, 255, 0), k.pos(this.healthBarBackground.pos.x + 43, this.healthBarBackground.pos.y + 2)]);
         this.element = k.add([k.rect(38, 41), k.color(characterElemColors[0], characterElemColors[1], characterElemColors[2]), k.pos(this.healthBarBackground.pos.x + 2, this.healthBarBackground.pos.y + 2)]);
-        this.level = k.add([k.text(characterSlot.character.level, { size: fontSize }), k.pos(this.healthBarBackground.pos.x + this.getLevelPadding(characterSlot.character), this.healthBarBackground.pos.y + 12)]);
+        this.level = k.add([k.text(characterSlot.level, { size: fontSize }), k.pos(this.healthBarBackground.pos.x + this.getLevelPadding(), this.healthBarBackground.pos.y + 12)]);
     }
 
     damage(damage) {
-        this.characterSlot.remainingHp = this.characterSlot.remainingHp - (damage - this.characterSlot.character.armor());
-        this.healthbar.width = (this.characterSlot.remainingHp * 210) / this.characterSlot.character.health();
+        this.characterSlot.remainingHp = this.characterSlot.remainingHp - (damage - this.characterSlot.armor());
+        this.healthbar.width = (this.characterSlot.remainingHp * 210) / this.characterSlot.health();
     }
 
     destroy() {
@@ -26,7 +26,7 @@ export default class Healthbar {
         k.destroy(this.level);
     }
 
-    getLevelPadding(character) {
-        return character.level > 9 ? 7 : 15
+    getLevelPadding() {
+        return this.characterSlot.level > 9 ? 7 : 15
     }
 }
