@@ -2,6 +2,7 @@ import ennemiesPos from "../json/system/ennemies-pos.json";
 import alliesPos from "../json/system/allies-pos.json";
 import Healthbar from "./Healthbar";
 import k from "../kaplayCtx";
+import spells from "../json/spells.json";
 
 export default class CharacterSlot {
 
@@ -15,9 +16,11 @@ export default class CharacterSlot {
         this.position = position;
         this.teamNumber = teamNumber;
         this.remainingHp = this.health();
-        this.speedSum = this.speed();
+        this.speedSum = 0;
         this.healthbar = this.createHealthBar(this);
         this.gameObject = this.createGameObject(this, this.teamNumber);
+
+        this.spellCooldowns = [0, 0, 0];
 
         k.loadSprite("char-icon", "assets/" + this.character.icon);
         this.turnGameObject = k.add([k.sprite("char-icon"), k.scale(0.3), k.pos(30, ((720 * this.speedSum) / 1000) + 140)]);
@@ -43,13 +46,22 @@ export default class CharacterSlot {
     }
 
     spells() {
-        return this.character.spells();
+        return this.character.spells;
     }
 
+    hit(power) {
+        this.remainingHp -= power;
+        this.healthbar.setBarWidth(this.remainingHp, this.health());
 
-    cast(spellId) {
-        this.character.spells[spellId].remainingCooldown = this.character.spells[spellId].cooldown;
-        return this.character.spells[spellId].basePower + this.attack();
+        if (this.isDead()) this.kill();
+    }
+
+    setSpellOnCD(spellSlot) {
+        this.spellCooldowns[spellSlot] = this.spells()[spellSlot].cooldown;
+    }
+
+    isSpellOnCD(spellSlot) {
+        return this.spellCooldowns[spellSlot] > 0;
     }
 
     x() {
@@ -74,6 +86,10 @@ export default class CharacterSlot {
         }
     }
 
+    isDead() {
+        return this.remainingHp <= 0;
+    }
+
     kill() {
         this.healthbar.destroy();
         this.gameObject.destroy();
@@ -93,8 +109,13 @@ export default class CharacterSlot {
         return new Healthbar(this);
     }
 
-    setCharacterActionIconPos(height) {
-        this.turnGameObject.pos = k.vec2(30, height);
-        this.turnTeamCircle.pos = k.vec2(52, height + 22);
+    setTimelineIconPos() {
+        let y = ((720 * this.speedSum) / 1000) + 140
+        this.setTlIconPos(y);
+    }
+
+    setTlIconPos(y) {
+        this.turnGameObject.pos = k.vec2(30, y);
+        this.turnTeamCircle.pos = k.vec2(52, y + 22);
     }
 }

@@ -2,8 +2,8 @@ export default class Spell {
     constructor(spell) {
         this.name = spell.name;
         this.basePower = spell.basePower;
-        this.baseCooldown = spell.basePower;
+        this.cooldown = spell.cooldown;
         this.type = spell.type;
-        this.remainingCooldown = 0;
+        this.affect = spell.affect;
     }
 }

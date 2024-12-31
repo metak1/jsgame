@@ -14,9 +14,8 @@ export default class Healthbar {
         this.level = k.add([k.text(characterSlot.level, { size: fontSize }), k.pos(this.healthBarBackground.pos.x + this.getLevelPadding(), this.healthBarBackground.pos.y + 12)]);
     }
 
-    damage(damage) {
-        this.characterSlot.remainingHp = this.characterSlot.remainingHp - (damage - this.characterSlot.armor());
-        this.healthbar.width = (this.characterSlot.remainingHp * 210) / this.characterSlot.health();
+    setBarWidth(hp, maxHp) {
+        this.healthbar.width = (hp * 210) / maxHp;
     }
 
     destroy() {

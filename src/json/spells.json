@@ -4,48 +4,55 @@
         "name": "fireball",
         "cooldown": 0,
         "basePower": 40,
-        "type": "attack"
+        "type": "attack",
+        "affect": "mono"
     },
     {
         "id": 2,
         "name": "ice lance",
-        "cooldown": 0,
+        "cooldown": 3,
         "basePower": 10,
-        "type": "attack"
+        "type": "attack",
+        "affect": "mono"
     },
     {
         "id": 3,
         "name": "poison",
         "cooldown": 0,
         "basePower": 5,
-        "type": "poison"
+        "type": "poison",
+        "affect": "area"
     },
     {
         "id": 4,
         "name": "heal",
         "cooldown": 2,
         "basePower": 50,
-        "type": "heal"
+        "type": "heal",
+        "affect": "area"
     },
     {
         "id": 5,
         "name": "buff attack",
         "cooldown": 2,
         "basePower": 50,
-        "type": "buff:attack"
+        "type": "buff:attack",
+        "affect": "self"
     },
     {
         "id": 6,
         "name": "buff invu",
         "cooldown": 2,
         "basePower": 50,
-        "type": "buff:invulnerable"
+        "type": "buff:invulnerable",
+        "affect": "mono"
     },
     {
         "id": 7,
         "name": "debuff arm",
         "cooldown": 2,
         "basePower": 20,
-        "type": "debuff:armor"
+        "type": "debuff:armor",
+        "affect": "area"
     }
 ]

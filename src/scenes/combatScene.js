@@ -2,33 +2,46 @@ import k from "../kaplayCtx";
 import Character from "../classes/Character";
 import missions from "../json/missions.json";
 import CharacterSlot from "../classes/CharacterSlot";
-import Position from "../classes/Position";
-import Healthbar from "../classes/Healthbar";
+import SpellHandler from "../classes/system/SpellHandler";
 
+let state = {
+    spellHandler: new SpellHandler(),
+    currentCharacter: null,
+    target: null,
+    turn: 1,
+    wave: 0,
+    focus: false,
+    spellSlot: null,
+    spell: null,
+    charPos: null,
+    charTeam: null,
+    team: null,
+    enemies: null,
+    allCharacters: null,
+    mission: null,
+    combatStart: true,
 
-let currentPlayingCharacterSlot = null;
-let target = null;
-let turn = 1;
-let wave = 0;
-let hasToFocus = false;
-let spellId = null;
-let charPos = null;
-let charTeam = null;
-let turnCharIcon = null;
-let turnCharName = null;
-let turnCharHp = null;
-let team = null;
-let ennemies = null;
-let allChars = null;
-let mission = null;
-let turnText = null;
-let waveText = null;
-let spellSlots = null;
-let spellSlotsText = [];
-let combatStart = true;
+    // REMOVE HARD CODED HERO TEAM
+    heroTeam: [
+        new Character(1, 40, []),
+        new Character(2, 23, []),
+        new Character(4, 5, []),
+    ]
+};
+
+let ui = {
+    turnBg: null,
+    waveBg: null,
+    turnText: null,
+    turnCharIcon: null,
+    turnCharName: null,
+    turnCharHp: null,
+    waveText: null,
+    spellSlots: [],
+    spellSlotsText: [],
+};
 
 export default function combatScene() {
-
     k.loadSprite("combat-bg", "assets/background.png");
     k.loadSprite("spell-slot", "assets/spell-slot.png");
     k.loadSprite("healthbar-bg", "assets/healthbar-background.png");
@@ -37,185 +50,148 @@ export default function combatScene() {
 }
 
 function loadMission(stage) {
-
-    mission = missions.find(mission => mission.stage == stage);
+    state.mission = missions.find(m => m.stage == stage);
 
     k.add([k.sprite("combat-bg"), k.pos(0, 0)]);
     k.add([k.sprite("timeline-bg"), k.pos(50, 120)]);
-    turnCharIcon = k.add([k.pos(200, 900)]);
-    turnCharName = k.add([k.pos(380, 950), k.text("")]);
-    turnCharHp = k.add([k.pos(380, 990), k.text("")]);
+    ui.turnText = k.add([k.text(`Turn ${state.turn}`, { size: 24 }), k.pos(10, 15)]);
+    ui.waveText = k.add([
+        k.text(`Wave ${state.wave + 1} / ${state.mission.waves.length}`, { size: 24 }),
+        k.pos(1730, 15),
+    ]);
 
-    let turnBg = k.add([k.rect(200, 50), k.color(40, 40, 40)]);
-    turnText = k.add([k.text("Turn " + turn, { size: 24 }), k.pos(10, 15)]);
 
-    let waveBg = k.add([k.rect(200, 50), k.color(40, 40, 40), k.pos(1720, 0)]);
-    waveText = k.add([k.text("Wave " + (wave + 1) + " / " + mission.waves.length, { size: 24 }), k.pos(1730, 15)]);
+    ui.turnCharIcon = k.add([k.pos(200, 900)]);
+    ui.turnCharName = k.add([k.pos(380, 950), k.text("")]);
+    ui.turnCharHp = k.add([k.pos(380, 990), k.text("")]);
 
-    spellSlots = [
-        k.add([k.sprite("spell-slot"), k.pos(1290, 870), k.area({ width: 200, height: 200 }), "spell", "0"]),
-        k.add([k.sprite("spell-slot"), k.pos(1500, 870), k.area({ width: 200, height: 200 }), "spell", "1"]),
-        k.add([k.sprite("spell-slot"), k.pos(1710, 870), k.area({ width: 200, height: 200 }), "spell", "2"])
-    ];
+    ui.turnBg = k.add([k.rect(200, 50), k.color(40, 40, 40)]);
+    ui.turnText = k.add([k.text("Turn " + state.turn, { size: 24 }), k.pos(10, 15)]);
 
-    const heroTeam = [
-        new Character(1, 40, []),
-        new Character(2, 23, []),
-        new Character(4, 5, []),
-    ];
+    ui.waveBg = k.add([k.rect(200, 50), k.color(40, 40, 40), k.pos(1720, 0)]);
+    ui.waveText = k.add([k.text("Wave " + (state.wave + 1) + " / " + state.mission.waves.length, { size: 24 }), k.pos(1730, 15)]);
 
+
+
+    ui.spellSlots = [
+        1290, 1500, 1710
+    ].map((x, i) => k.add([k.sprite("spell-slot"), k.pos(x, 870), k.area(), "spell", `${i}`]));
+
+    setupClickHandlers();
+
+    state.team = spawnCharacters();
+    state.enemies = spawnWave();
+    state.allCharacters = [...state.team, ...state.enemies];
+
+    prepareTurnOrder();
+    startTurn();
+}
+
+function setupClickHandlers() {
     k.onClick("character-slot", (o) => {
-        if (!hasToFocus) return;
+        if (!state.focus) return;
 
-        const tag = o.tags.find(t => t.startsWith("ennemy-") || t.startsWith("ally-"));
-        const position = tag.substring(tag.indexOf("-") + 1);
-        target = tag.startsWith("ennemy-")
-            ? ennemies.find(e => e.position == position)
-            : team.find(a => a.position == position);
-        activateSpell(currentPlayingCharacterSlot, spellId, target);
-        currentPlayingCharacterSlot.playedOnce = true;
-        hasToFocus = false;
-        if (ennemies.length == 0) {
-            wave++;
+        const [tag, position] = o.tags.find(t => t.startsWith("ennemy-") || t.startsWith("ally-")).split("-");
+        state.target = tag === "ennemy"
+            ? state.enemies.find(e => e.position == position)
+            : state.team.find(t => t.position == position);
 
-            if (wave < mission.waves.length) {
-                ennemies = spawnWave(wave);
-                waveText.text = "Wave " + (wave + 1) + " / " + mission.waves.length;
-                nextCharacterAction();
-            } else {
-                setWin();
-            }
-        } else if (team.length == 0) {
-            setLose();
-        } else {
-            nextCharacterAction();
+        state.allCharacters = state.spellHandler.activateSpell(state.spell, state.currentCharacter, state.target, state.allCharacters);
+        state.currentCharacter.setSpellOnCD(state.spellSlot);
+        state.currentCharacter.playedOnce = true;
+        state.focus = false;
+
+        if (!state.enemies.length) {
+            if (++state.wave < state.mission.waves.length) {
+                state.enemies = spawnWave(state.wave);
+                ui.waveText.text = `Wave ${state.wave + 1} / ${state.mission.waves.length}`;
+            } else return setWin();
         }
+
+        if (!state.team.length) return setLose();
+        startTurn();
     });
 
     k.onClick("spell", (o) => {
-        hasToFocus = true;
-        spellId = Number(o.tags.find(tag => ["0", "1", "2"].includes(tag)));
-        target = null;
+        state.spellSlot = +o.tags.find(t => ["0", "1", "2"].includes(t));
+        if (!state.currentCharacter.isSpellOnCD(state.spellSlot)) {
+            state.spell = state.currentCharacter.spells()[state.spellSlot];
+            state.target = null;
+            state.focus = true;
+            if (state.spell.affect != "mono") {
+                state.allCharacters = state.spellHandler.activateSpell(state.spell, state.currentCharacter, null, state.allCharacters);
+            }
+        } else {
+            console.log("spell is on cd");
+        }
+    });
+}
+
+function spawnWave() {
+    return state.mission.waves[state.wave].wave.map((id, index) => {
+        return new CharacterSlot(new Character(id), 1, [], index, 2)
+
+    });
+}
+
+function spawnCharacters() {
+    return state.heroTeam.map((char, index) => new CharacterSlot(char, 1, [], index, 1));
+}
+
+function refreshState(target) {
+    const teamKey = target.teamNumber === 1 ? "team" : "enemies";
+    state[teamKey] = state[teamKey].filter(c => c !== target);
+    state.allCharacters = state.allCharacters.filter(c => c !== target);
+}
+
+function prepareTurnOrder() {
+    state.allCharacters.forEach(char => {
+        char.speedSum += char.speed()
+        char.setTimelineIconPos();
+    });
+    state.allCharacters.sort((a, b) => b.speed - a.speed);
+
+    state.allCharacters[0].setTlIconPos(840);
+}
+
+function updateUI() {
+    const char = state.currentCharacter;
+    console.log();
+    ui.turnText.text = `Turn ${state.turn}`;
+    ui.spellSlotsText.forEach((text, i) => {
+        text.text = char.spells()[i]?.name || "";
     });
 
-    team = spawnTeam(heroTeam);
-    ennemies = spawnWave(wave);
-    allChars = team.concat(ennemies);
+    let spriteName = "char-icon-" + char.name;
+    k.loadSprite(spriteName, "assets/" + char.character.icon);
 
-
-    setCharacterActionPositionTeam();
-
-    startCharacterAction();
-};
-
-function incrementTurn() {
-    turn++
-    turnText.text = "Turn " + turn;
+    ui.turnCharIcon.use(k.sprite(spriteName));
+    ui.turnCharName.text = char.character.name;
+    ui.turnCharHp.text = char.remainingHp + " / " + char.health();
 }
 
-function spawnWave(waveNumber) {
-    return mission.waves[waveNumber].wave.map((id, index) => {
-        console.log(id, index);
-        return new CharacterSlot(new Character(id), 1, [], index, 2);
-    }
-    );
-}
+function startTurn() {
+    state.currentCharacter = state.allCharacters[0];
 
-function spawnTeam(heroTeam) {
-    return heroTeam.map((hero, index) => new CharacterSlot(hero, 1, [], index, 1));
-}
-
-function activateSpell(sourceChar, spellId, targetChar) {
-    const damages = sourceChar.cast(spellId);
-    targetChar.healthbar.damage(damages);
-    if (targetChar.remainingHp <= 0) {
-        refreshTeamsData(targetChar);
-        targetChar.kill();
-    }
-}
-
-function setCharacterActionPositionTeam() {
-
-    let currentSpeedChart = allChars.sort((a, b) => b.speedSum - a.speedSum);
-    console.log(currentSpeedChart);
-    for (let i in currentSpeedChart) {
-        currentSpeedChart[i].setCharacterActionIconPos(((720 * currentSpeedChart[i].speedSum) / 1000) + 140);
-    }
-    currentSpeedChart[0].setCharacterActionIconPos(840);
-    charPos = currentSpeedChart[0].position;
-    charTeam = currentSpeedChart[0].teamNumber;
-    console.log(charPos, charTeam);
-}
-
-function updateCharacterActionUI() {
-    let spriteName = "char-icon-" + turnCharName;
-    k.loadSprite(spriteName, "assets/" + currentPlayingCharacterSlot.character.icon);
-
-    turnCharIcon.use(k.sprite(spriteName));
-    turnCharName.text = currentPlayingCharacterSlot.character.name;
-    turnCharHp.text = currentPlayingCharacterSlot.remainingHp + " / " + currentPlayingCharacterSlot.health();
-
-    for (let i in spellSlots) {
-        const spriteSize = spellSlots[i].frameSize || { x: 200, y: 200 };
-        spellSlotsText[i].text = currentPlayingCharacterSlot.character.spells[i].name;
-    }
-}
-
-function startCharacterAction() {
-    currentPlayingCharacterSlot = charTeam == 1
-        ? team.find(t => t.position == charPos)
-        : ennemies.find(e => e.position == charPos);
-
-    if (combatStart) {
-        for (let i in spellSlots) {
-            const spriteSize = spellSlots[i].frameSize || { x: 200, y: 200 };
-            spellSlotsText[i] = k.add([k.text(currentPlayingCharacterSlot.character.spells[i].name), k.pos(spellSlots[i].pos.x + 10, spellSlots[i].pos.y + (spriteSize.y) / 2), k.color(0, 0, 0)]);
-        }
-        combatStart = false;
+    if (state.combatStart) {
+        ui.spellSlotsText = ui.spellSlots.map((slot, i) =>
+            k.add([k.text("", { size: 24 }), k.pos(slot.pos.x + 10, slot.pos.y + 100), k.color(0, 0, 0)])
+        );
+        state.combatStart = false;
     }
 
-    updateCharacterActionUI();
+    updateUI();
 
-    // TO REMOVE ennemies pass their turn auto
-    if (currentPlayingCharacterSlot.teamNumber == 2) {
-        currentPlayingCharacterSlot.playedOnce = true;
-        nextCharacterAction();
+    if (state.currentCharacter.teamNumber === 2) {
+        state.currentCharacter.playedOnce = true;
+        return startTurn();
     }
-}
-
-function nextCharacterAction() {
-    let changeTurn = true;
-
-    currentPlayingCharacterSlot.speedSum = 0;
-    for (let i in allChars) {
-        if (changeTurn) {
-            changeTurn = allChars[i].playedOnce;
-        }
-        allChars[i].speedSum += allChars[i].speed();
-    }
-
-    if (changeTurn) {
-        incrementTurn();
-    }
-    setCharacterActionPositionTeam();
-
-    startCharacterAction();
-}
-
-function refreshTeamsData(target) {
-    if (target.teamNumber == 1) {
-        let index = team.indexOf();
-        team = team.filter(t => t.position != target.position);
-    } else {
-        ennemies = ennemies.filter(e => e.position != target.position);
-    }
-    allChars = allChars.filter(a => !(a.position == target.position && a.teamNumber == target.teamNumber));
 }
 
 function setWin() {
-    console.log("WIN !!!");
+    console.log("Victory!");
 }
 
 function setLose() {
-    console.log("LOSE !!!");
+    console.log("Defeat!");
 }
