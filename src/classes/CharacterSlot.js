@@ -49,11 +49,29 @@ export default class CharacterSlot {
         return this.character.spells;
     }
 
+    healBonusStat(healStat) {
+        switch (healStat) {
+            case "attack":
+                return this.attack();
+            case "health":
+                return this.health();
+            case "armor":
+                return this.armor();
+        }
+    }
+
     hit(power) {
         this.remainingHp -= power;
         this.healthbar.setBarWidth(this.remainingHp, this.health());
 
         if (this.isDead()) this.kill();
+    }
+
+    heal(power) {
+        if (this.remainingHp + power <= this.health()) this.remainingHp += power;
+        else this.remainingHp = this.health();
+
+        this.healthbar.setBarWidth(this.remainingHp, this.health());
     }
 
     setSpellOnCD(spellSlot) {

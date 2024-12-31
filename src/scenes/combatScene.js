@@ -20,6 +20,7 @@ let state = {
     allCharacters: null,
     mission: null,
     combatStart: true,
+    changeTurn: true,
 
     // REMOVE HARD CODED HERO TEAM
     heroTeam: [
@@ -97,18 +98,23 @@ function setupClickHandlers() {
             : state.team.find(t => t.position == position);
 
         state.allCharacters = state.spellHandler.activateSpell(state.spell, state.currentCharacter, state.target, state.allCharacters);
+
+        refreshTeamStates();
+
         state.currentCharacter.setSpellOnCD(state.spellSlot);
         state.currentCharacter.playedOnce = true;
         state.focus = false;
 
-        if (!state.enemies.length) {
+        if (state.enemies.length == 0) {
             if (++state.wave < state.mission.waves.length) {
                 state.enemies = spawnWave(state.wave);
                 ui.waveText.text = `Wave ${state.wave + 1} / ${state.mission.waves.length}`;
+                state.allCharacters = [...state.team, ...state.enemies];
             } else return setWin();
         }
 
-        if (!state.team.length) return setLose();
+        if (state.team.length == 0) return setLose();
+        nextTurn();
         startTurn();
     });
 
@@ -120,11 +126,37 @@ function setupClickHandlers() {
             state.focus = true;
             if (state.spell.affect != "mono") {
                 state.allCharacters = state.spellHandler.activateSpell(state.spell, state.currentCharacter, null, state.allCharacters);
+
+                refreshTeamStates();
+                nextTurn();
+                startTurn();
             }
         } else {
-            console.log("spell is on cd");
+            window.alert("spell is on cd");
         }
     });
+}
+
+function nextTurn() {
+    state.allCharacters[0].speedSum = 0;
+
+    prepareTurnOrder();
+
+    if (state.changeTurn) {
+        incrementTurn();
+    }
+}
+
+function incrementTurn() {
+    state.turn++
+    ui.turnText.text = `Turn ${state.turn}`;
+    state.allCharacters.forEach(char => char.playedOnce = false);
+}
+
+function refreshTeamStates() {
+    state.team = state.allCharacters.filter(char => char.teamNumber == 1);
+    state.enemies = state.allCharacters.filter(char => char.teamNumber == 2);
+    console.log(state.team, state.enemies)
 }
 
 function spawnWave() {
@@ -138,25 +170,23 @@ function spawnCharacters() {
     return state.heroTeam.map((char, index) => new CharacterSlot(char, 1, [], index, 1));
 }
 
-function refreshState(target) {
-    const teamKey = target.teamNumber === 1 ? "team" : "enemies";
-    state[teamKey] = state[teamKey].filter(c => c !== target);
-    state.allCharacters = state.allCharacters.filter(c => c !== target);
-}
-
 function prepareTurnOrder() {
+    state.changeTurn = true;
+
     state.allCharacters.forEach(char => {
+        if (state.changeTurn) state.changeTurn = char.playedOnce;
         char.speedSum += char.speed()
+    });
+    state.allCharacters.sort((a, b) => b.speedSum - a.speedSum);
+    state.allCharacters.forEach(char => {
         char.setTimelineIconPos();
     });
-    state.allCharacters.sort((a, b) => b.speed - a.speed);
 
     state.allCharacters[0].setTlIconPos(840);
 }
 
 function updateUI() {
     const char = state.currentCharacter;
-    console.log();
     ui.turnText.text = `Turn ${state.turn}`;
     ui.spellSlotsText.forEach((text, i) => {
         text.text = char.spells()[i]?.name || "";
@@ -184,14 +214,15 @@ function startTurn() {
 
     if (state.currentCharacter.teamNumber === 2) {
         state.currentCharacter.playedOnce = true;
-        return startTurn();
+        nextTurn();
+        startTurn();
     }
 }
 
 function setWin() {
-    console.log("Victory!");
+    window.alert("Victory!");
 }
 
 function setLose() {
-    console.log("Defeat!");
+    window.alert("Defeat!");
 }

@@ -30,7 +30,6 @@ class SpellHandler {
 
     activateSpell(spell, source, target, allCharacters) {
         let primaryType = spell.type.split(":")[0];
-        console.log(primaryType == SpellHandler.TYPES.attack);
         switch (primaryType) {
             case SpellHandler.TYPES.attack:
                 this.hit(spell, source, target, allCharacters);
@@ -63,16 +62,32 @@ class SpellHandler {
                 allCharacters[indexOfTarget].hit(spell.basePower + source.attack() - target.armor());
                 break;
             case SpellHandler.AFFECT.area:
-
+                allCharacters.forEach(a => {
+                    if (source.teamNumber != a.teamNumber)
+                        a.hit(spell.basePower + source.attack() - a.armor())
+                });
                 break;
-            case SpellHandler.AFFECT.self:
-
         }
-        console.log(spell.affect, spell.name, source, target, allCharacters);
     }
 
     heal(spell, source, target, allCharacters) {
-        console.log(spell.type, spell.name, source, target, allCharacters);
+        let indexOfTarget = null;
+        switch (spell.affect) {
+            case SpellHandler.AFFECT.mono:
+                indexOfTarget = allCharacters.findIndex(e => e.teamNumber == target.teamNumber && e.position == target.position);
+                allCharacters[indexOfTarget].heal(spell.basePower + source.attack() - target.armor());
+                break;
+            case SpellHandler.AFFECT.area:
+                allCharacters.forEach(a => {
+                    if (source.teamNumber == a.teamNumber)
+                        a.heal(spell.basePower + source.healBonusStat(spell.healBonusStat));
+                });
+                break;
+            case SpellHandler.AFFECT.self:
+                indexOfTarget = allCharacters.findIndex(e => e.teamNumber == source.teamNumber && e.position == source.position);
+                allCharacters[indexOfTarget].heal(spell.basePower + source.healBonusStat(spell.healBonusStat));
+                break;
+        }
     }
 
     poison(spell, source, target, allCharacters) {
