@@ -5,22 +5,22 @@
         "waves": [
             {
                 "wave": [
-                    "Rasky",
-                    "Rasky",
-                    "Rasky",
-                    "Rasky"
+                    3,
+                    3,
+                    3,
+                    3
                 ],
                 "boss": null
             },
             {
                 "wave": [
-                    "Rasky"
+                    3
                 ],
                 "boss": null
             },
             {
                 "wave": [
-                    "Lancelot"
+                    1
                 ],
                 "boss": 0
             }

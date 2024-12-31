@@ -1,0 +1,51 @@
+[
+    {
+        "id": 1,
+        "name": "fireball",
+        "cooldown": 0,
+        "basePower": 40,
+        "type": "attack"
+    },
+    {
+        "id": 2,
+        "name": "ice lance",
+        "cooldown": 0,
+        "basePower": 10,
+        "type": "attack"
+    },
+    {
+        "id": 3,
+        "name": "poison",
+        "cooldown": 0,
+        "basePower": 5,
+        "type": "poison"
+    },
+    {
+        "id": 4,
+        "name": "heal",
+        "cooldown": 2,
+        "basePower": 50,
+        "type": "heal"
+    },
+    {
+        "id": 5,
+        "name": "buff attack",
+        "cooldown": 2,
+        "basePower": 50,
+        "type": "buff:attack"
+    },
+    {
+        "id": 6,
+        "name": "buff invu",
+        "cooldown": 2,
+        "basePower": 50,
+        "type": "buff:invulnerable"
+    },
+    {
+        "id": 7,
+        "name": "debuff arm",
+        "cooldown": 2,
+        "basePower": 20,
+        "type": "debuff:armor"
+    }
+]
