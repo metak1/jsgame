@@ -20,6 +20,8 @@ export default class CharacterSlot {
         this.healthbar = this.createHealthBar(this);
         this.gameObject = this.createGameObject(this, this.teamNumber);
 
+
+
         this.spellCooldowns = [0, 0, 0];
 
         k.loadSprite("char-icon", "assets/" + this.character.icon);

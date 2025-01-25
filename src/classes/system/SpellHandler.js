@@ -7,19 +7,28 @@ class SpellHandler {
         attack: "attack",
         poison: "poison",
         heal: "heal",
-        buff: {
-            attack: "buff:attack",
-            armor: "buff:armor",
-            speed: "buff:speed",
-            invulnerable: "buff:invulnerable"
-        },
-        debuff: {
-            attack: "debuff:attack",
-            armor: "debuff:armor",
-            speed: "debuff:speed",
-            enhancements: "debuff:enhancements"
-        },
+        buff: "buff",
+        debuff: "debuff",
         cleanse: "cleanse"
+    };
+
+    static HEAL_TYPES = {
+        instant: "instant",
+        duration: "duration"
+    };
+
+    static BUFF_TYPES = {
+        attack: "attack",
+        armor: "armor",
+        speed: "speed",
+        invulnerable: "invulnerable"
+    };
+
+    static DEBUFF_TYPES = {
+        attack: "attack",
+        armor: "armor",
+        speed: "speed",
+        enhancements: "enhancements"
     };
 
     static AFFECT = {
@@ -29,7 +38,8 @@ class SpellHandler {
     }
 
     activateSpell(spell, source, target, allCharacters) {
-        let primaryType = spell.type.split(":")[0];
+        let [primaryType, secondaryType] = spell.type.split(":");
+        console.log(primaryType, secondaryType);
         switch (primaryType) {
             case SpellHandler.TYPES.attack:
                 this.hit(spell, source, target, allCharacters);
@@ -38,7 +48,10 @@ class SpellHandler {
                 this.poison(spell, source, target, allCharacters);
                 break;
             case SpellHandler.TYPES.heal:
-                this.heal(spell, source, target, allCharacters);
+                console.log("in")
+                if (secondaryType == SpellHandler.TYPES.heal.duration)
+                    this.buff(spell, source, target, allCharacters);
+                else this.heal(spell, source, target, allCharacters);
                 break;
             case SpellHandler.TYPES.buff:
                 this.buff(spell, source, target, allCharacters);

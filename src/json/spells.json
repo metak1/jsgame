@@ -20,15 +20,15 @@
         "name": "poison",
         "cooldown": 0,
         "basePower": 5,
-        "type": "attack",
-        "affect": "area"
+        "type": "poison",
+        "affect": "mono"
     },
     {
         "id": 4,
         "name": "heal",
         "cooldown": 2,
         "basePower": 50,
-        "type": "heal",
+        "type": "heal:instant",
         "affect": "area",
         "healBonusStat": "armor"
     },
