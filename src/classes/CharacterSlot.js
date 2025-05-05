@@ -5,7 +5,6 @@ import k from "../kaplayCtx";
 import spells from "../json/spells.json";
 
 export default class CharacterSlot {
-
     constructor(character, level, equipments, position, teamNumber) {
         this.slotWidth = 125;
         this.slotHeight = 250;
@@ -17,62 +16,67 @@ export default class CharacterSlot {
         this.teamNumber = teamNumber;
         this.remainingHp = this.health();
         this.speedSum = 0;
-        this.healthbar = this.createHealthBar(this);
-        this.gameObject = this.createGameObject(this, this.teamNumber);
-
-
-
         this.spellCooldowns = [0, 0, 0];
-
-        k.loadSprite("char-icon", "assets/" + this.character.icon);
-        this.turnGameObject = k.add([k.sprite("char-icon"), k.scale(0.3), k.pos(30, ((720 * this.speedSum) / 1000) + 140)]);
-        this.turnTeamCircle = k.add([k.pos(52, ((720 * this.speedSum) / 1000) + 162), k.circle(23, { fill: false }), k.outline(4, teamNumber == 1 ? k.RED : k.BLUE)]);
-
         this.playedOnce = false;
+
+        this.healthbar = this.createHealthBar();
+        this.effectsBox = this.createEffectsBox();
+        this.gameObject = this.createGameObject();
+
+        k.loadSprite("char-icon", `assets/${this.character.icon}`);
+        this.turnGameObject = k.add([
+            k.sprite("char-icon"),
+            k.scale(0.3),
+            k.pos(30, this.calculateTimelineY())
+        ]);
+        this.turnTeamCircle = k.add([
+            k.pos(52, this.calculateTimelineY() + 22),
+            k.circle(23, { fill: false }),
+            k.outline(4, teamNumber === 1 ? k.RED : k.BLUE)
+        ]);
     }
 
     health() {
-        return this.character.baseHealth + 0;
+        return this.character.baseHealth;
     }
 
     attack() {
-        return this.character.baseAttack + 0;
+        return this.character.baseAttack;
     }
 
     armor() {
-        return this.character.baseArmor + 0;
+        return this.character.baseArmor;
     }
 
     speed() {
-        return this.character.baseSpeed + 0;
+        return this.character.baseSpeed;
     }
 
     spells() {
         return this.character.spells;
     }
+    
+    effects() {
+        return this.character.effects;
+    }
 
     healBonusStat(healStat) {
         switch (healStat) {
-            case "attack":
-                return this.attack();
-            case "health":
-                return this.health();
-            case "armor":
-                return this.armor();
+            case "attack": return this.attack();
+            case "health": return this.health();
+            case "armor": return this.armor();
+            default: return 0;
         }
     }
 
     hit(power) {
-        this.remainingHp -= power;
+        this.remainingHp = Math.max(this.remainingHp - power, 0);
         this.healthbar.setBarWidth(this.remainingHp, this.health());
-
         if (this.isDead()) this.kill();
     }
 
     heal(power) {
-        if (this.remainingHp + power <= this.health()) this.remainingHp += power;
-        else this.remainingHp = this.health();
-
+        this.remainingHp = Math.min(this.remainingHp + power, this.health());
         this.healthbar.setBarWidth(this.remainingHp, this.health());
     }
 
@@ -85,25 +89,15 @@ export default class CharacterSlot {
     }
 
     x() {
-        switch (this.teamNumber) {
-            case 1:
-                return alliesPos[this.position].x;
-            case 2:
-                return ennemiesPos[this.position].x;
-            default:
-                break;
-        }
+        return this.teamNumber === 1
+            ? alliesPos[this.position].x
+            : ennemiesPos[this.position].x;
     }
 
     y() {
-        switch (this.teamNumber) {
-            case 1:
-                return alliesPos[this.position].y;
-            case 2:
-                return ennemiesPos[this.position].y;
-            default:
-                break;
-        }
+        return this.teamNumber === 1
+            ? alliesPos[this.position].y
+            : ennemiesPos[this.position].y;
     }
 
     isDead() {
@@ -118,8 +112,14 @@ export default class CharacterSlot {
     }
 
     createGameObject() {
-        let tag = this.teamNumber == 1 ? "ally-" + this.position : "ennemy-" + this.position;
-        let gameObject = k.add([k.area(), k.rect(this.slotWidth, this.slotHeight), k.pos(this.x(), this.y())]);
+        const tag = this.teamNumber === 1
+            ? `ally-${this.position}`
+            : `ennemy-${this.position}`;
+        const gameObject = k.add([
+            k.area(),
+            k.rect(this.slotWidth, this.slotHeight),
+            k.pos(this.x(), this.y())
+        ]);
         gameObject.tag(tag);
         gameObject.tag("character-slot");
         return gameObject;
@@ -129,8 +129,23 @@ export default class CharacterSlot {
         return new Healthbar(this);
     }
 
+    createEffectsBox() {
+        console.log(this.healthbar.x(), this.healthbar.y())
+        const effectsBox = k.add([
+            k.area(),
+            k.rect(this.healthbar.width(), 65),
+            k.pos(this.healthbar.x(), this.healthbar.y() - 70)
+        ]);
+
+        return effectsBox;
+    }
+
+    calculateTimelineY() {
+        return (720 * this.speedSum) / 1000 + 140;
+    }
+
     setTimelineIconPos() {
-        let y = ((720 * this.speedSum) / 1000) + 140
+        const y = this.calculateTimelineY();
         this.setTlIconPos(y);
     }
 

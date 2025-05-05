@@ -18,6 +18,10 @@ export default class Healthbar {
         this.healthbar.width = (hp * 210) / maxHp;
     }
 
+    width() {
+        return this.healthbar.width;
+    }
+
     destroy() {
         k.destroy(this.healthBarBackground);
         k.destroy(this.healthbar);
@@ -27,5 +31,13 @@ export default class Healthbar {
 
     getLevelPadding() {
         return this.characterSlot.level > 9 ? 7 : 15
+    }
+
+    x() {
+        return this.healthbar.pos.x;
+    }
+
+    y() {
+        return this.healthbar.pos.y;
     }
 }
