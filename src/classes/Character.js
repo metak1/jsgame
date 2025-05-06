@@ -15,7 +15,6 @@ export default class Character {
         this.baseSpeed = char.baseSpeed;
         this.icon = char.icon;
         this.spells = [];
-        this.effects = [];
 
 
         for (let i in char.spells) {

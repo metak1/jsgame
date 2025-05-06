@@ -1,8 +1,4 @@
 class SpellHandler {
-
-    // TYPES and AFFECT are not really relevant in code but are used to let developpers 
-    // know what kind of spells they can create
-
     static TYPES = {
         attack: "attack",
         poison: "poison",
@@ -35,12 +31,10 @@ class SpellHandler {
         mono: "mono",
         area: "area",
         self: "self"
-    }
+    };
 
     activateSpell(spell, source, target, allCharacters) {
-        let [primaryType, secondaryType] = spell.type.split(":");
-        console.log(primaryType, secondaryType);
-        switch (primaryType) {
+        switch (spell.primaryType) {
             case SpellHandler.TYPES.attack:
                 this.hit(spell, source, target, allCharacters);
                 break;
@@ -48,10 +42,11 @@ class SpellHandler {
                 this.poison(spell, source, target, allCharacters);
                 break;
             case SpellHandler.TYPES.heal:
-                console.log("in")
-                if (secondaryType == SpellHandler.TYPES.heal.duration)
+                if (spell.secondaryType === SpellHandler.HEAL_TYPES.duration) {
                     this.buff(spell, source, target, allCharacters);
-                else this.heal(spell, source, target, allCharacters);
+                } else {
+                    this.heal(spell, source, target, allCharacters);
+                }
                 break;
             case SpellHandler.TYPES.buff:
                 this.buff(spell, source, target, allCharacters);
@@ -64,60 +59,79 @@ class SpellHandler {
                 break;
         }
 
-        allCharacters = allCharacters.filter(a => !a.isDead());
-        return allCharacters;
+        return allCharacters.filter(a => !a.isDead());
     }
 
     hit(spell, source, target, allCharacters) {
-        switch (spell.affect) {
-            case SpellHandler.AFFECT.mono:
-                let indexOfTarget = allCharacters.findIndex(e => e.teamNumber == target.teamNumber && e.position == target.position);
-                allCharacters[indexOfTarget].hit(spell.basePower + source.attack() - target.armor());
-                break;
-            case SpellHandler.AFFECT.area:
-                allCharacters.forEach(a => {
-                    if (source.teamNumber != a.teamNumber)
-                        a.hit(spell.basePower + source.attack() - a.armor())
-                });
-                break;
+        if (spell.affect === SpellHandler.AFFECT.mono) {
+            const targetIndex = allCharacters.findIndex(
+                e => e.teamNumber === target.teamNumber && e.position === target.position
+            );
+            allCharacters[targetIndex].hit(spell.basePower + source.attack() - target.armor());
+        } else if (spell.affect === SpellHandler.AFFECT.area) {
+            allCharacters.forEach(a => {
+                if (source.teamNumber !== a.teamNumber) {
+                    a.hit(spell.basePower + source.attack() - a.armor());
+                }
+            });
         }
     }
 
     heal(spell, source, target, allCharacters) {
-        let indexOfTarget = null;
-        switch (spell.affect) {
-            case SpellHandler.AFFECT.mono:
-                indexOfTarget = allCharacters.findIndex(e => e.teamNumber == target.teamNumber && e.position == target.position);
-                allCharacters[indexOfTarget].heal(spell.basePower + source.attack() - target.armor());
-                break;
-            case SpellHandler.AFFECT.area:
-                allCharacters.forEach(a => {
-                    if (source.teamNumber == a.teamNumber)
-                        a.heal(spell.basePower + source.healBonusStat(spell.healBonusStat));
-                });
-                break;
-            case SpellHandler.AFFECT.self:
-                indexOfTarget = allCharacters.findIndex(e => e.teamNumber == source.teamNumber && e.position == source.position);
-                allCharacters[indexOfTarget].heal(spell.basePower + source.healBonusStat(spell.healBonusStat));
-                break;
+        if (spell.affect === SpellHandler.AFFECT.mono) {
+            const targetIndex = allCharacters.findIndex(
+                e => e.teamNumber === target.teamNumber && e.position === target.position
+            );
+            allCharacters[targetIndex].heal(spell.basePower + source.attack() - target.armor());
+        } else if (spell.affect === SpellHandler.AFFECT.area) {
+            allCharacters.forEach(a => {
+                if (source.teamNumber === a.teamNumber) {
+                    a.heal(spell.basePower + source.healBonusStat(spell.healBonusStat));
+                }
+            });
+        } else if (spell.affect === SpellHandler.AFFECT.self) {
+            const sourceIndex = allCharacters.findIndex(
+                e => e.teamNumber === source.teamNumber && e.position === source.position
+            );
+            allCharacters[sourceIndex].heal(spell.basePower + source.healBonusStat(spell.healBonusStat));
         }
     }
 
     poison(spell, source, target, allCharacters) {
-        console.log(spell.type, spell.name, source, target, allCharacters);
+        this.applyEffect(spell, source, target, allCharacters);
     }
 
     buff(spell, source, target, allCharacters) {
-        console.log(spell.type, spell.name, source, target, allCharacters);
+        this.applyEffect(spell, source, target, allCharacters);
     }
 
     debuff(spell, source, target, allCharacters) {
-        console.log(spell.type, spell.name, source, target, allCharacters);
+        this.applyEffect(spell, source, target, allCharacters);
     }
 
     cleanse(spell, source, target, allCharacters) {
-        console.log(spell.type, spell.name, source, target, allCharacters);
+        // Implement cleanse logic here if needed
+    }
+
+    applyEffect(spell, source, target, allCharacters) {
+        if (spell.affect === SpellHandler.AFFECT.mono) {
+            const targetIndex = allCharacters.findIndex(
+                e => e.teamNumber === target.teamNumber && e.position === target.position
+            );
+            allCharacters[targetIndex].affect(spell.primaryType, spell.secondaryType, spell.basePower + source.attack());
+        } else if (spell.affect === SpellHandler.AFFECT.area) {
+            allCharacters.forEach(a => {
+                if (source.teamNumber === a.teamNumber) {
+                    a.affect(spell.primaryType, spell.secondaryType, spell.basePower + source.attack());
+                }
+            });
+        } else if (spell.affect === SpellHandler.AFFECT.self) {
+            const sourceIndex = allCharacters.findIndex(
+                e => e.teamNumber === source.teamNumber && e.position === source.position
+            );
+            allCharacters[sourceIndex].affect(spell.primaryType, spell.secondaryType, spell.basePower);
+        }
     }
 }
 
-export default SpellHandler; // Exporting the method
+export default SpellHandler;

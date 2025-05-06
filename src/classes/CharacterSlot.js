@@ -1,6 +1,7 @@
 import ennemiesPos from "../json/system/ennemies-pos.json";
 import alliesPos from "../json/system/allies-pos.json";
 import Healthbar from "./Healthbar";
+import Effect from "./Effect";
 import k from "../kaplayCtx";
 import spells from "../json/spells.json";
 
@@ -17,6 +18,7 @@ export default class CharacterSlot {
         this.remainingHp = this.health();
         this.speedSum = 0;
         this.spellCooldowns = [0, 0, 0];
+        this.effects = [];
         this.playedOnce = false;
 
         this.healthbar = this.createHealthBar();
@@ -55,10 +57,6 @@ export default class CharacterSlot {
     spells() {
         return this.character.spells;
     }
-    
-    effects() {
-        return this.character.effects;
-    }
 
     healBonusStat(healStat) {
         switch (healStat) {
@@ -78,6 +76,11 @@ export default class CharacterSlot {
     heal(power) {
         this.remainingHp = Math.min(this.remainingHp + power, this.health());
         this.healthbar.setBarWidth(this.remainingHp, this.health());
+    }
+
+    affect(primaryType, secondaryType, power, duration) {
+        console.log("affecting " + this.character.name, primaryType, secondaryType, power, duration);
+        this.createEffect(primaryType, secondaryType, power, duration)
     }
 
     setSpellOnCD(spellSlot) {
@@ -129,12 +132,16 @@ export default class CharacterSlot {
         return new Healthbar(this);
     }
 
+    createEffect(primaryType, secondaryType, power, duration) {
+        this.effects = [...this.effects, new Effect(this.effectsBox, primaryType, secondaryType, power, duration)];
+    }
+
     createEffectsBox() {
         console.log(this.healthbar.x(), this.healthbar.y())
         const effectsBox = k.add([
             k.area(),
-            k.rect(this.healthbar.width(), 65),
-            k.pos(this.healthbar.x(), this.healthbar.y() - 70)
+            k.rect(this.healthbar.width(), 32),
+            k.pos(this.healthbar.x(), this.healthbar.y() - 37)
         ]);
 
         return effectsBox;
